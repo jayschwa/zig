@@ -337,7 +337,6 @@ pub const Target = struct {
                 return .musl;
             }
             switch (target_os.tag) {
-                .freestanding,
                 .ananas,
                 .cloudabi,
                 .dragonfly,
@@ -371,6 +370,7 @@ pub const Target = struct {
                 .netbsd,
                 .hurd,
                 => return .gnu,
+                .freestanding,
                 .windows,
                 .uefi,
                 => return .msvc,
@@ -985,7 +985,7 @@ pub const Target = struct {
 
     pub fn exeFileExtSimple(cpu_arch: Cpu.Arch, os_tag: Os.Tag) [:0]const u8 {
         switch (os_tag) {
-            .windows => return ".exe",
+            .freestanding, .windows => return ".exe",
             .uefi => return ".efi",
             else => if (cpu_arch.isWasm()) {
                 return ".wasm";
@@ -1032,7 +1032,7 @@ pub const Target = struct {
     }
 
     pub fn getObjectFormatSimple(os_tag: Os.Tag, cpu_arch: Cpu.Arch) ObjectFormat {
-        if (os_tag == .windows or os_tag == .uefi) {
+        if (os_tag == .freestanding or os_tag == .windows or os_tag == .uefi) {
             return .coff;
         } else if (os_tag.isDarwin()) {
             return .macho;

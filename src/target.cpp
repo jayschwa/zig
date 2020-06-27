@@ -210,7 +210,6 @@ Os target_os_enum(size_t index) {
 
 ZigLLVM_OSType get_llvm_os_type(Os os_type) {
     switch (os_type) {
-        case OsFreestanding:
         case OsOther:
             return ZigLLVM_UnknownOS;
         case OsAnanas:
@@ -239,6 +238,7 @@ ZigLLVM_OSType get_llvm_os_type(Os os_type) {
             return ZigLLVM_OpenBSD;
         case OsSolaris:
             return ZigLLVM_Solaris;
+        case OsFreestanding:
         case OsWindows:
         case OsUefi:
             return ZigLLVM_Win32;
@@ -455,7 +455,7 @@ bool target_os_is_darwin(Os os) {
 }
 
 ZigLLVM_ObjectFormatType target_object_format(const ZigTarget *target) {
-    if (target->os == OsUefi || target->os == OsWindows) {
+    if (target->os == OsFreestanding || target->os == OsUefi || target->os == OsWindows) {
         return ZigLLVM_COFF;
     } else if (target_os_is_darwin(target->os)) {
         return ZigLLVM_MachO;
@@ -740,7 +740,7 @@ bool target_allows_addr_zero(const ZigTarget *target) {
 const char *target_o_file_ext(const ZigTarget *target) {
     if (target->abi == ZigLLVM_MSVC ||
         (target->os == OsWindows && !target_abi_is_gnu(target->abi)) ||
-        target->os == OsUefi)
+        target->os == OsFreestanding || target->os == OsUefi)
     {
         return ".obj";
     } else {
@@ -757,7 +757,7 @@ const char *target_llvm_ir_file_ext(const ZigTarget *target) {
 }
 
 const char *target_exe_file_ext(const ZigTarget *target) {
-    if (target->os == OsWindows) {
+    if (target->os == OsFreestanding || target->os == OsWindows) {
         return ".exe";
     } else if (target->os == OsUefi) {
         return ".efi";
@@ -770,7 +770,7 @@ const char *target_exe_file_ext(const ZigTarget *target) {
 
 const char *target_lib_file_prefix(const ZigTarget *target) {
     if ((target->os == OsWindows && !target_abi_is_gnu(target->abi)) ||
-        target->os == OsUefi ||
+        target->os == OsFreestanding || target->os == OsUefi ||
         target_is_wasm(target))
     {
         return "";
@@ -785,7 +785,7 @@ const char *target_lib_file_ext(const ZigTarget *target, bool is_static,
     if (target_is_wasm(target)) {
         return ".wasm";
     }
-    if (target->os == OsWindows || target->os == OsUefi) {
+    if (target->os == OsFreestanding || target->os == OsWindows || target->os == OsUefi) {
         if (is_static) {
             if (target->os == OsWindows && target_abi_is_gnu(target->abi)) {
                 return ".a";
@@ -1039,7 +1039,6 @@ ZigLLVM_EnvironmentType target_default_abi(ZigLLVM_ArchType arch, Os os) {
         return ZigLLVM_Musl;
     }
     switch (os) {
-        case OsFreestanding:
         case OsAnanas:
         case OsCloudABI:
         case OsLv2:
@@ -1073,6 +1072,7 @@ ZigLLVM_EnvironmentType target_default_abi(ZigLLVM_ArchType arch, Os os) {
         case OsDragonFly:
         case OsHurd:
             return ZigLLVM_GNU;
+        case OsFreestanding:
         case OsUefi:
         case OsWindows:
             return ZigLLVM_MSVC;

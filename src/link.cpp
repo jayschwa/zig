@@ -2168,6 +2168,15 @@ static bool zig_lld_link(ZigLLVM_ObjectFormatType oformat, const char **args, si
     return result;
 }
 
+static void add_dos_link_args(LinkJob *lj) {
+    lj->args.append("-BASE:0");
+    lj->args.append("-ENTRY:start");
+    lj->args.append("-MERGE:.rdata=.data"); // TODO: Does this work with .text?
+    lj->args.append("-NODEFAULTLIB");
+    lj->args.append("-SAFESEH:NO");
+    lj->args.append("-SUBSYSTEM:console");
+}
+
 static void add_uefi_link_args(LinkJob *lj) {
     lj->args.append("-BASE:0");
     lj->args.append("-ENTRY:EfiMain");
@@ -2543,7 +2552,9 @@ static void construct_linker_job_coff(LinkJob *lj) {
     bool have_windows_dll_import_libs = false;
     switch (detect_subsystem(g)) {
         case TargetSubsystemAuto:
-            if (g->zig_target->os == OsUefi) {
+            if (g->zig_target->os == OsFreestanding) {
+                add_dos_link_args(lj);
+            } else if (g->zig_target->os == OsUefi) {
                 add_uefi_link_args(lj);
             } else {
                 add_win_link_args(lj, is_library, &have_windows_dll_import_libs);
