@@ -2170,8 +2170,8 @@ static bool zig_lld_link(ZigLLVM_ObjectFormatType oformat, const char **args, si
 
 static void add_dos_link_args(LinkJob *lj) {
     lj->args.append("-BASE:0");
-    lj->args.append("-ENTRY:start");
-    lj->args.append("-MERGE:.rdata=.data"); // TODO: Does this work with .text?
+    lj->args.append("-ENTRY:_start");
+    lj->args.append("-MERGE:.rdata=.data");
     lj->args.append("-NODEFAULTLIB");
     lj->args.append("-SAFESEH:NO");
     lj->args.append("-SUBSYSTEM:console");
